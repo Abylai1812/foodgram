@@ -60,6 +60,30 @@ class RecipesViewSet(viewsets.ModelViewSet):
         """Автоматически назначает автора."""
         serializer.save(author=self.request.user)
 
+    def create_or_delete_relation(self, request, model=None):
+        """
+        Всмогомательный метод для сокращения дублирования кода 
+        при добавлении/удалении рецептов из избранного или корзины пользователя. 
+        """
+        current_user = request.user
+        recipe = get_object_or_404(Recipes, pk=self.kwargs['pk'])
+
+        relation = model.objects.filter(user=current_user, recipe=recipe)
+
+        if request.method == 'POST':
+            if relation.exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            model.objects.create(user=current_user, recipe=recipe)
+            serializer = RecipesFavoriteSubscribeSerializer(recipe, context={'request': request})
+            return Response(serializer.data)
+
+        if relation.exists():
+            relation.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -68,28 +92,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk=None):
         """Метод настройки избранных добавление и удаление."""
-        current_user = request.user
-        recipe = get_object_or_404(Recipes, pk=self.kwargs['pk'])
-
-        favorite = Favorite.objects.filter(user=current_user, recipe=recipe)
-
-        if request.method == 'POST':
-            if favorite.exists():
-                return Response(
-                    {'errors': 'Рецепт уже добавлен в избранное'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            Favorite.objects.create(user=current_user, recipe=recipe)
-            serializer = RecipesFavoriteSubscribeSerializer(recipe, context={'request':request})
-            return Response(serializer.data)
-            
-        if favorite.exists():
-            favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': 'Этот рецепт не найден в избранным'}, 
-            status=status.HTTP_400_BAD_REQUEST
+        return self.create_or_delete_relation(
+            request, 
+            model=Favorite
         )
 
     @action(
@@ -99,31 +104,12 @@ class RecipesViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart'
     )
     def post_delete_cart(self, request, pk=None):
-        """Метод настройки список покупок добавление и удаление рецепта."""
-        current_user = request.user
-        recipe = get_object_or_404(Recipes, pk=self.kwargs['pk'])
-
-        cart = ShoppingCart.objects.filter(user=current_user, recipe=recipe)
-
-        if request.method == 'POST':
-            if cart.exists():
-                return Response(
-                    {'errors': 'Рецепт уже добавлен в список покупок'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            ShoppingCart.objects.create(user=current_user, recipe=recipe)
-            serializer = RecipesFavoriteSubscribeSerializer(recipe, context={'request':request})
-            return Response(serializer.data)
-            
-        if cart.exists():
-            cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': 'Этот рецепт не найден в списке покупок'}, 
-            status=status.HTTP_400_BAD_REQUEST
+        """Метод настройки избранных добавление и удаление."""
+        return self.create_or_delete_relation(
+            request,
+            model=ShoppingCart
         )
-  
+
     def get_shopping_ingredients(self, request):
         """Формирует словарь ингредиентов для список покупок текущего пользователя."""
         current_user = request.user
