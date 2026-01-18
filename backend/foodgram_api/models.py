@@ -37,7 +37,7 @@ class Ingredients(models.Model):
     """Модель ингредиентов для рецептов."""
 
     name = models.CharField('Название', max_length=200)
-    measurement_unit = models.CharField('Количества', max_length=10)
+    measurement_unit = models.CharField('Единица измерения', max_length=10)
 
 
     class Meta:
@@ -86,6 +86,10 @@ class RecipeIngredient(models.Model):
     ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
 
+    def __str__(self):
+        """Возвращает строковое представление ингредиентов."""
+        return f'{self.ingredients} {self.recipes}'
+
 
 class Favorite(models.Model):
     """Модель избранное."""
@@ -106,6 +110,10 @@ class Favorite(models.Model):
                 name='unique_favorite'
             )
         ]
+    
+    def __str__(self):
+        """Возвращает строковое представление избранных."""
+        return f'{self.user} {self.recipe}'
 
 
 class ShoppingCart(models.Model):
@@ -126,3 +134,7 @@ class ShoppingCart(models.Model):
                 name='unique_cart'
             )
         ]
+    
+    def __str__(self):
+        """Возвращает строковое представление список покупок."""
+        return f'{self.user} {self.recipe}'

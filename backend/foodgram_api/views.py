@@ -10,18 +10,21 @@ from reportlab.pdfgen import canvas
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework import filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination
 
 
-
-from .serializers import (
-    RecipesSerializer,
+from foodgram_api.serializers import (
+    RecipesCreateUpdateSerializer,
+    RecipesReadSerializer,
     IngredientsSerializer,
     TagsSerializer,
     UserAvatarSerializer,
@@ -29,8 +32,9 @@ from .serializers import (
     UserSubscribeSerializer,
     RecipesFavoriteSubscribeSerializer,
     )
-from .models import Recipes, Ingredients, Tags, Favorite, ShoppingCart, RecipeIngredient
+from foodgram_api.models import Recipes, Ingredients, Tags, Favorite, ShoppingCart, RecipeIngredient
 from users.models import Subscribe, User
+from foodgram_api.permissions import IsAuthorOrReadOnly
 
 
 
@@ -41,7 +45,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Recipes.objects.all()
-    serializer_class = RecipesSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('tags',)
+
+
+    def get_serializer_class(self):
+        """Определение сериализаторов при определенных запросах."""
+        if self.request.method in 'GET':
+            return RecipesReadSerializer
+        return RecipesCreateUpdateSerializer
 
     def perform_create(self, serializer):
         """Автоматически назначает автора."""
@@ -176,7 +189,15 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = None
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        name = self.request.query_params.get('name')
+        if name:
+            queryset = queryset.filter(name__istartswith=name)
+        return queryset
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для работы с тегами.
@@ -186,6 +207,7 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
+    pagination_class = None
 
 
 
@@ -213,7 +235,6 @@ class UserViewSet(DjoserUserViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
 
     @action(
         detail=False,
