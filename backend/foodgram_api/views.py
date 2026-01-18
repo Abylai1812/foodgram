@@ -125,7 +125,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         )
   
     def get_shopping_ingredients(self, request):
-        """Формирует словарь ингредиентов для список текущего пользователя."""
+        """Формирует словарь ингредиентов для список покупок текущего пользователя."""
         current_user = request.user
 
         cart_ingredients = {}
@@ -179,6 +179,22 @@ class RecipesViewSet(viewsets.ModelViewSet):
         
         response['Content-Disposition'] = f'attachment; filename="{file_name}"'
         return response
+
+    @action(
+        detail=True,
+        methods=['get'],
+        permission_classes=[IsAuthenticated],
+        url_path='get-link'
+    )
+    def get_short_link(self, request, pk=None):
+        """Метод получение короткий ссылки на рецепт."""
+        recipe = self.get_object()
+        short_link = request.build_absolute_uri(
+            f'/r/{recipe.id}'
+        )
+        return Response({
+            'short-link': short_link
+        })
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -273,7 +289,6 @@ class UserViewSet(DjoserUserViewSet):
                     status=status.HTTP_201_CREATED
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
         subscription = Subscribe.objects.filter(user=current_user, author=author)
         if subscription.exists():

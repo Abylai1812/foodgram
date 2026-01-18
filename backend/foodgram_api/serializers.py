@@ -124,21 +124,21 @@ class RecipesReadSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients', 'image',
             'is_favorited', 'is_in_shopping_cart', 'name', 'text', 'cooking_time')
         read_only_fields = ('author', 'is_favorited')
-    
+   
+    def get_user_recipe_status(self, obj, model):
+        """Вспомогательный метод для проверки есть ли рецепт в избарнных и списке покупок"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return model.objects.filter(user=request.user, recipe=obj).exists()
+        return False
 
     def get_is_favorited(self, obj):
         """Метод настройки избранных для рецепта True/False.""" 
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return Favorite.objects.filter(user=request.user, recipe=obj).exists()
-        return False
+        return self.get_user_recipe_status(obj, Favorite)
     
     def get_is_in_shopping_cart(self, obj):
         """Метод настройки список покупок для рецепта True/False."""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
-        return False
+        return self.get_user_recipe_status(obj, ShoppingCart)
 
 
 class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
@@ -157,12 +157,14 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create_ingredients_set(self, recipes, ingredients):
         """Вспомогательный метод для создание ингредиентов."""
-        for item in ingredients:
-           RecipeIngredient.objects.create(
+        ingredints_list = [
+           RecipeIngredient(
                ingredients=item['id'],
                amount=item['amount'],
                recipes=recipes
-            )
+            ) for item in ingredients
+        ]
+        RecipeIngredient.objects.bulk_create(ingredints_list)
 
         return recipes
 
