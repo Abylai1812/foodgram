@@ -18,12 +18,22 @@ from users.models import User, Subscribe
 class BaseUserSerializer(serializers.ModelSerializer):
     """Кастомный сериализатор для работы с пользователями."""
 
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta:
         """Мета-класс для настройки сериализатора BaseUserSerializer."""
 
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'avatar', )
+        fields = ('email', 'id', 'username', 'is_subscribed', 
+            'first_name', 'last_name', 'avatar')
         read_only_fields = ('avatar',)
+    
+    def get_is_subscribed(self, obj):
+        """Метод настройки подписки на пользователя True/False.""" 
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Subscribe.objects.filter(user=request.user, author=obj).exists()
+        return False
 
 
 class CustomUserCreateSerializer(UserCreateSerializer, BaseUserSerializer):
@@ -103,8 +113,8 @@ class RecipesReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(allow_null=False)
     is_favorited = serializers.SerializerMethodField()
     author = CustomUserSerializer(read_only=True)
-    ingredients = IngredientsReadSerializer(many=True)
-    # is_in_shopping_cart = serializers.SerializerMethodField()
+    ingredients = IngredientsReadSerializer(many=True, source='recipeingredient_set')
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -112,7 +122,7 @@ class RecipesReadSerializer(serializers.ModelSerializer):
 
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients', 'image',
-            'is_favorited', 'name', 'text', 'cooking_time')
+            'is_favorited', 'is_in_shopping_cart', 'name', 'text', 'cooking_time')
         read_only_fields = ('author', 'is_favorited')
     
 
@@ -123,13 +133,12 @@ class RecipesReadSerializer(serializers.ModelSerializer):
             return Favorite.objects.filter(user=request.user, recipe=obj).exists()
         return False
     
-    # def get_is_in_shopping_cart(self, obj):
-    #     """Метод настройки список покупок для рецепта True/False."""
-    #     request = self.context.get('request')
-    #     if request and request.user.is_authenticated:
-    #         return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
-    #     return False
-
+    def get_is_in_shopping_cart(self, obj):
+        """Метод настройки список покупок для рецепта True/False."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ShoppingCart.objects.filter(user=request.user, recipe=obj).exists()
+        return False
 
 
 class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
@@ -219,10 +228,9 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         fields=('avatar',)
 
 
-class UserSubscribeSerializer(serializers.ModelSerializer):
+class UserSubscribeSerializer(BaseUserSerializer, serializers.ModelSerializer):
     """Кастомный сериализатор для работы с подпиской пользователя."""
 
-    is_subscribed = serializers.SerializerMethodField()
     recipes = RecipesFavoriteSubscribeSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
     avatar = UserAvatarSerializer()
@@ -236,18 +244,10 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
             'is_subscribed', 'recipes', 'recipes_count', 'avatar')
         read_only_fields = ('recipes', 'avatar')
 
-
     def get_recipes_count(self, obj):
         """Метод настройки количества рецептов у автора."""
         return obj.recipes.count()
     
-    def get_is_subscribed(self, obj):
-        """Метод настройки подписки на пользователя True/False.""" 
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return Subscribe.objects.filter(user=request.user, author=obj).exists()
-        return False
-
 
 class SubscribeSerializer(serializers.ModelSerializer):
     """Сериализатор подписок.

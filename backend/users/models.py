@@ -8,6 +8,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=100, blank=False)
     avatar = models.ImageField(upload_to='users/', null=True, default=None)
 
+
     class Meta(AbstractUser.Meta):
         """Мета-класс для настройки модели CustomUser."""
 
@@ -15,7 +16,6 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
-    
     def __str__(self):
         """Возвращает строковое представление имя пользователя."""
         return self.username
@@ -34,6 +34,7 @@ class Subscribe(models.Model):
         on_delete=models.CASCADE,
         related_name='subscribers'
     )
+
 
     class Meta:
         """Мета-класс для настройки модели Subscribe."""

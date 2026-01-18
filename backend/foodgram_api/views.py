@@ -199,6 +199,7 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(name__istartswith=name)
         return queryset
 
+
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для работы с тегами.
 
@@ -208,7 +209,6 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
     pagination_class = None
-
 
 
 class UserViewSet(DjoserUserViewSet):
