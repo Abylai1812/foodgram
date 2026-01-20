@@ -3,14 +3,14 @@
 
 from django.contrib import admin
 
-from .models import Recipes, Ingredients, Tags
+from .models import Recipes, Ingredients, Tags, Favorite, ShoppingCart
 
 
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'text', 'author', 'cooking_time')
     list_editable = ('name', 'text', 'author', 'cooking_time')
-    search_fields = ('name', 'text', 'author', 'author__username')
+    search_fields = ('name', 'text', 'author', 'author__username', 'is_favorited')
     list_filter = ('tags',)
 
 
@@ -26,3 +26,18 @@ class TagsAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'slug')
     list_editable = ('name', 'slug')
     search_fields = ('name',)
+
+
+# @admin.register(Favorite)
+# class FavoriteAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'user', 'recipe')
+#     list_editable = ('user', 'recipe')
+#     search_fields = ('user',)
+
+
+# @admin.register(ShoppingCart)
+# class ShoppingCartAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'user', 'recipe')
+#     list_editable = ('user', 'recipe')
+#     search_fields = ('user',)
+

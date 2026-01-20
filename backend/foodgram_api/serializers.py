@@ -15,6 +15,16 @@ from foodgram_api.models import Recipes, Ingredients, Tags, Favorite, RecipeIngr
 from users.models import User, Subscribe
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')  
+            ext = format.split('/')[-1]  
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
+
+
 class BaseUserSerializer(serializers.ModelSerializer):
     """Кастомный сериализатор для работы с пользователями."""
 
@@ -38,6 +48,7 @@ class BaseUserSerializer(serializers.ModelSerializer):
 
 class CustomUserCreateSerializer(UserCreateSerializer, BaseUserSerializer):
 
+
     class Meta(UserCreateSerializer.Meta):
         model = User
         fields = BaseUserSerializer.Meta.fields + ('password',)
@@ -48,16 +59,6 @@ class CustomUserSerializer(UserSerializer, BaseUserSerializer):
     class Meta(UserSerializer.Meta):
         model = User
         fields = BaseUserSerializer.Meta.fields
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')  
-            ext = format.split('/')[-1]  
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
-        return super().to_internal_value(data)
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
@@ -110,7 +111,6 @@ class TagsSerializer(serializers.ModelSerializer):
 class RecipesReadSerializer(serializers.ModelSerializer):
     """Сериализатор для чтение модели `Recipes` (рецепты блюд)."""
 
-    image = Base64ImageField(allow_null=False)
     is_favorited = serializers.SerializerMethodField()
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientsReadSerializer(many=True, source='recipeingredient_set')
@@ -146,6 +146,7 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField(allow_null=False)
     ingredients = IngredientsAmountSerilaizer(many=True)
+    cooking_time = serializers.IntegerField(min_value=1)
 
     class Meta:
         """Мета-класс для настройки сериализатора RecipesCreateUpdateSerializer."""
@@ -154,6 +155,36 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients', 'image',
                 'name', 'text',  'cooking_time')
         read_only_fields = ('author',)
+
+    def validate(self, data):
+        tags = data.get('tags')
+        ingredients = data.get('ingredients')
+
+        if ingredients is None:
+            raise serializers.ValidationError(
+                'Ошибка.Нет поле ingredients.'
+            )
+        if not ingredients:
+            raise serializers.ValidationError(
+                'Список ingredients не может быть пустым.'
+            )
+
+        id_values = [item['id'] for item in ingredients]
+        if len(id_values) != len(set(id_values)):
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться.'
+            )
+        
+        if tags is None:
+            raise serializers.ValidationError(
+                'Ошибка.Нет поле tags.'
+            )
+        if len(tags) != len(set(tags)):
+            raise serializers.ValidationError(
+            'Теги не должны повторяться.'
+        )
+
+        return data
 
     def create_ingredients_set(self, recipes, ingredients):
         """Вспомогательный метод для создание ингредиентов."""
@@ -235,15 +266,13 @@ class UserSubscribeSerializer(BaseUserSerializer, serializers.ModelSerializer):
 
     recipes = RecipesFavoriteSubscribeSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
-    avatar = UserAvatarSerializer()
 
 
     class Meta:
         """Мета-класс для настройки сериализатора UserSubscribeSerializer."""
 
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 
-            'is_subscribed', 'recipes', 'recipes_count', 'avatar')
+        fields = BaseUserSerializer.Meta.fields + ('recipes', 'recipes_count')
         read_only_fields = ('recipes', 'avatar')
 
     def get_recipes_count(self, obj):

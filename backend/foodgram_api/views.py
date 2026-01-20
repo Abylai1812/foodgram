@@ -18,7 +18,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework import filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -104,7 +104,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart'
     )
     def post_delete_cart(self, request, pk=None):
-        """Метод настройки избранных добавление и удаление."""
+        """Метод настройки в список покупок добавление и удаление."""
         return self.create_or_delete_relation(
             request,
             model=ShoppingCart
@@ -169,7 +169,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['get'],
-        permission_classes=[IsAuthenticated],
+        permission_classes=[AllowAny],
         url_path='get-link'
     )
     def get_short_link(self, request, pk=None):
@@ -195,6 +195,7 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
+        """Метод поиска ингредиенты по полю name регистронезависимо, по вхождению в начало названия."""
         queryset = super().get_queryset()
         name = self.request.query_params.get('name')
         if name:
@@ -245,7 +246,7 @@ class UserViewSet(DjoserUserViewSet):
         url_path='subscriptions'
     )
     def get_subscriptions(self, request):
-        """Метод настройки подписки."""
+        """Метод настройки получение всех подписчиков."""
         subscriptions = User.objects.filter(subscribers__user=request.user)
         serializer = UserSubscribeSerializer(
             subscriptions,

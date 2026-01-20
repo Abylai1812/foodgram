@@ -15,5 +15,7 @@ class CustomUserAdmin(UserAdmin):
         'first_name',
         'last_name',
     )
+    list_display_links = ('username', )
+    list_editable = ('first_name', 'last_name', 'email')
     search_fields = ('username', 'email')
     ordering = ('username',)

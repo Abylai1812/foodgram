@@ -27,8 +27,7 @@ SECRET_KEY = "django-insecure-bfy0dbhozlod@!8eq*upoviz0=m4%d9=4l9=_5@x+==l13tp8p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -147,7 +146,7 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'LOGIN_FIELD': 'username',
+    'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'foodgram_api.serializers.CustomUserCreateSerializer',
         'user': 'foodgram_api.serializers.CustomUserSerializer',
