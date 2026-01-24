@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 
+import os
 from pathlib import Path
 
 
@@ -28,6 +29,8 @@ SECRET_KEY = "django-insecure-bfy0dbhozlod@!8eq*upoviz0=m4%d9=4l9=_5@x+==l13tp8p
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+FRONTEND_URL = 'http://localhost:3000'
 
 # Application definition
 
@@ -141,8 +144,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,
+    'DEFAULT_PAGINATION_CLASS': 'foodgram_api.pagination.BasePagination',
 }
 
 DJOSER = {

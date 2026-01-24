@@ -8,18 +8,19 @@
 from io import BytesIO
 from reportlab.pdfgen import canvas
 
+
+from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
+from django.urls import reverse
 
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
-from rest_framework.pagination import PageNumberPagination
 
 
 from foodgram_api.serializers import (
@@ -35,6 +36,8 @@ from foodgram_api.serializers import (
 from foodgram_api.models import Recipes, Ingredients, Tags, Favorite, ShoppingCart, RecipeIngredient
 from users.models import Subscribe, User
 from foodgram_api.permissions import IsAuthorOrReadOnly
+from foodgram_api.pagination import BasePagination
+from foodgram_api.filters import RecipeFilter
 
 
 
@@ -44,11 +47,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
     Обеспечивает CRUD операции для модели Recipes с проверкой прав автора.
     """
 
-    queryset = Recipes.objects.all()
+    queryset = Recipes.objects.all().order_by('-pub_date')
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    pagination_class = BasePagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('tags',)
-
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         """Определение сериализаторов при определенных запросах."""
@@ -115,7 +118,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         current_user = request.user
 
         cart_ingredients = {}
-        for cart_entry in current_user.cart_recipes.all():
+        for cart_entry in current_user.cart_items.all():
             recipe_ingredients = RecipeIngredient.objects.filter(recipes=cart_entry.recipe)
             for item in recipe_ingredients:
                 name = item.ingredients.name
@@ -176,11 +179,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
         """Метод получение короткий ссылки на рецепт."""
         recipe = self.get_object()
         short_link = request.build_absolute_uri(
-            f'/r/{recipe.id}'
+            f'/r/{recipe.id}/'
         )
         return Response({
             'short-link': short_link
         })
+
+def redirect_to_recipe(request, pk):
+    """Перенаправляет с короткой ссылки на страницу рецепта."""
+    get_object_or_404(Recipes, pk=pk)
+    return redirect(f'{settings.FRONTEND_URL}recipes/{pk}/')
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -220,6 +228,9 @@ class UserViewSet(DjoserUserViewSet):
     Обеспечивает CRUD операции для модели User.
     """
 
+    queryset = User.objects.all()
+    permission_classes = [AllowAny]
+
     @action(
         detail=False,
         methods=['put', 'delete'],
@@ -247,9 +258,18 @@ class UserViewSet(DjoserUserViewSet):
     )
     def get_subscriptions(self, request):
         """Метод настройки получение всех подписчиков."""
-        subscriptions = User.objects.filter(subscribers__user=request.user)
+        queryset = User.objects.filter(subscribers__user=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = UserSubscribeSerializer(
+                page,
+                many=True,
+                context={'reuest':request}
+            )
+            return self.get_paginated_response(serializer.data)
+
         serializer = UserSubscribeSerializer(
-            subscriptions,
+            queryset,
             many=True,
             context={'request': request}
         )
