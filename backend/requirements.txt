@@ -5,3 +5,4 @@ flake8==7.1.1
 gunicorn==23.0.0
 reportlab==4.4.7
 django-filter==24.3
+psycopg2-binary==2.9.9
