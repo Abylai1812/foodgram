@@ -114,6 +114,7 @@ class RecipesReadSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientsReadSerializer(many=True, source='recipeingredient_set')
+    tags = TagsSerializer(many=True, read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
 
 
@@ -123,7 +124,7 @@ class RecipesReadSerializer(serializers.ModelSerializer):
         model = Recipes
         fields = ('id', 'tags', 'author', 'ingredients', 'image',
             'is_favorited', 'is_in_shopping_cart', 'name', 'text', 'cooking_time')
-        read_only_fields = ('author', 'is_favorited')
+        read_only_fields = ('author', 'is_favorited', 'tags')
    
     def get_user_recipe_status(self, obj, model):
         """Вспомогательный метод для проверки есть ли рецепт в избарнных и списке покупок"""
@@ -188,14 +189,14 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create_ingredients_set(self, recipes, ingredients):
         """Вспомогательный метод для создание ингредиентов."""
-        ingredints_list = [
+        ingredients_list = [
            RecipeIngredient(
                ingredients=item['id'],
                amount=item['amount'],
                recipes=recipes
             ) for item in ingredients
         ]
-        RecipeIngredient.objects.bulk_create(ingredints_list)
+        RecipeIngredient.objects.bulk_create(ingredients_list)
 
         return recipes
 
