@@ -168,7 +168,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         lines = []
         for name, info in cart_ingredients.items():
-            lines.append(f'{name}({info["measurement_unit"]})—{info["amount"]}')
+            lines.append(
+                f'{name}({info["measurement_unit"]})—{info["amount"]}'
+            )
         cart_text = '\n'.join(lines)
 
         file_format = request.query_params.get('file_format', 'txt')
