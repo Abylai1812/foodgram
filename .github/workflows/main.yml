@@ -162,7 +162,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "infra/docker-compose.production.yml"
-          target: "foodgram"
+          target: "kittygram"
           debug: true
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -172,7 +172,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd kittygram
+            cd foodgram
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
