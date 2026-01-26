@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 
-from recipes.models import Recipe, Ingredient, Tag
+from foodgram_api.models import Recipe, Ingredient, Tag
 
 User = get_user_model()
 
