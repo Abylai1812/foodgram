@@ -1,9 +1,9 @@
 """Тесты создания рецепта в проекте Foodgram."""
 
+import base64
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -43,11 +43,11 @@ class RecipeCreateAPITestCase(TestCase):
 
         Для создания рецепта.
         """
-        image = SimpleUploadedFile(
-            name='test.jpg',
-            content=b'test_image',
-            content_type='image/jpeg'
+        image_bytes = (
+            b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01'
+            b'\x00H\x00H\x00\x00\xff\xd9'
         )
+        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
         return {
             'name': 'Test recipe',
@@ -60,7 +60,7 @@ class RecipeCreateAPITestCase(TestCase):
                     'amount': 2
                 }
             ],
-            'image': image
+            'image': f'data:image/jpeg;base64,{image_base64}'
         }
 
     def test_guest_cannot_create_recipe(self):
@@ -68,7 +68,7 @@ class RecipeCreateAPITestCase(TestCase):
         response = self.guest_client.post(
             '/api/recipes/',
             data=self.get_valid_recipe_data(),
-            format='multipart'  # ← важно для image
+            format='json'
         )
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
@@ -81,9 +81,9 @@ class RecipeCreateAPITestCase(TestCase):
         response = self.auth_client.post(
             '/api/recipes/',
             data=self.get_valid_recipe_data(),
-            format='multipart'  # ← важно для image
+            format='json'
         )
-        print(response.data)
+
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(
             Recipes.objects.filter(
