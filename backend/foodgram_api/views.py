@@ -6,39 +6,39 @@
 
 
 from io import BytesIO
-from reportlab.pdfgen import canvas
-
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-from django.urls import reverse
-
-from rest_framework import viewsets
-from rest_framework import status
+from reportlab.pdfgen import canvas
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
-
+from foodgram_api.filters import RecipeFilter
+from foodgram_api.models import (
+    Favorite, Ingredients, RecipeIngredient,
+    Recipes, ShoppingCart, Tags
+)
+from foodgram_api.pagination import BasePagination
+from foodgram_api.permissions import IsAuthorOrReadOnly
 from foodgram_api.serializers import (
-    RecipesCreateUpdateSerializer,
-    RecipesReadSerializer,
     IngredientsSerializer,
+    RecipesCreateUpdateSerializer,
+    RecipesFavoriteSubscribeSerializer,
+    RecipesReadSerializer,
+    SubscribeSerializer,
     TagsSerializer,
     UserAvatarSerializer,
-    SubscribeSerializer,
-    UserSubscribeSerializer,
-    RecipesFavoriteSubscribeSerializer,
-    )
-from foodgram_api.models import Recipes, Ingredients, Tags, Favorite, ShoppingCart, RecipeIngredient
+    UserSubscribeSerializer
+)
 from users.models import Subscribe, User
-from foodgram_api.permissions import IsAuthorOrReadOnly
-from foodgram_api.pagination import BasePagination
-from foodgram_api.filters import RecipeFilter
-
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -65,27 +65,45 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def create_or_delete_relation(self, request, model=None):
         """
-        Всмогомательный метод для сокращения дублирования кода 
-        при добавлении/удалении рецептов из избранного или корзины пользователя. 
+        Вспомогомательный метод для сокращения дублирования кода.
+
+        При добавлении/удалении рецептов из избранного
+        или корзины пользователя.
         """
         current_user = request.user
-        recipe = get_object_or_404(Recipes, pk=self.kwargs['pk'])
+        recipe = get_object_or_404(
+            Recipes, pk=self.kwargs['pk'])
 
-        relation = model.objects.filter(user=current_user, recipe=recipe)
+        relation = model.objects.filter(
+            user=current_user,
+            recipe=recipe
+        )
 
         if request.method == 'POST':
             if relation.exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            model.objects.create(user=current_user, recipe=recipe)
-            serializer = RecipesFavoriteSubscribeSerializer(recipe, context={'request': request})
+            model.objects.create(
+                user=current_user,
+                recipe=recipe
+            )
+            serializer = RecipesFavoriteSubscribeSerializer(
+                recipe,
+                context={'request': request}
+            )
             return Response(serializer.data)
 
         if relation.exists():
             relation.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                status=status.HTTP_204_NO_CONTENT
+            )
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=True,
@@ -96,7 +114,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         """Метод настройки избранных добавление и удаление."""
         return self.create_or_delete_relation(
-            request, 
+            request,
             model=Favorite
         )
 
@@ -114,12 +132,17 @@ class RecipesViewSet(viewsets.ModelViewSet):
         )
 
     def get_shopping_ingredients(self, request):
-        """Формирует словарь ингредиентов для список покупок текущего пользователя."""
+        """Формирует словарь ингредиентов.
+
+        Для список покупок текущего пользователя.
+        """
         current_user = request.user
 
         cart_ingredients = {}
         for cart_entry in current_user.cart_items.all():
-            recipe_ingredients = RecipeIngredient.objects.filter(recipes=cart_entry.recipe)
+            recipe_ingredients = RecipeIngredient.objects.filter(
+                recipes=cart_entry.recipe
+            )
             for item in recipe_ingredients:
                 name = item.ingredients.name
                 amount = item.amount
@@ -150,7 +173,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         file_format = request.query_params.get('file_format', 'txt')
         file_name = f"shopping_cart.{file_format}"
-        if  file_format == 'pdf':
+        if file_format == 'pdf':
             buffer = BytesIO()
             p = canvas.Canvas(buffer)
             y = 800
@@ -165,7 +188,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             response = HttpResponse(cart_text, content_type='text/plain')
         elif file_format == 'csv':
             response = HttpResponse(cart_text, content_type='text/csv')
-        
+
         response['Content-Disposition'] = f'attachment; filename="{file_name}"'
         return response
 
@@ -185,6 +208,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'short-link': short_link
         })
 
+
 def redirect_to_recipe(request, pk):
     """Перенаправляет с короткой ссылки на страницу рецепта."""
     get_object_or_404(Recipes, pk=pk)
@@ -203,7 +227,11 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        """Метод поиска ингредиенты по полю name регистронезависимо, по вхождению в начало названия."""
+        """
+        Метод поиска ингредиенты по полю name регистронезависимо.
+
+        По вхождению в начало названия.
+        """
         queryset = super().get_queryset()
         name = self.request.query_params.get('name')
         if name:
@@ -245,7 +273,11 @@ class UserViewSet(DjoserUserViewSet):
                 user.avatar.delete(save=True)
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
-        serializer = UserAvatarSerializer(user, data=request.data, partial=True)
+        serializer = UserAvatarSerializer(
+            user,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -264,7 +296,7 @@ class UserViewSet(DjoserUserViewSet):
             serializer = UserSubscribeSerializer(
                 page,
                 many=True,
-                context={'reuest':request}
+                context={'reuest': request}
             )
             return self.get_paginated_response(serializer.data)
 
@@ -288,20 +320,32 @@ class UserViewSet(DjoserUserViewSet):
 
         if request.method == 'POST':
             data = {'author': author}
-            serializer = SubscribeSerializer(data=data, context={'request': request})
-            if serializer.is_valid(): 
+            serializer = SubscribeSerializer(
+                data=data,
+                context={'request': request}
+            )
+            if serializer.is_valid():
                 serializer.save(user=current_user)
                 return Response(
-                    UserSubscribeSerializer(author, context={'request': request}).data,
+                    UserSubscribeSerializer(
+                        author,
+                        context={'request': request}
+                    ).data,
                     status=status.HTTP_201_CREATED
                 )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        subscription = Subscribe.objects.filter(user=current_user, author=author)
+        subscription = Subscribe.objects.filter(
+            user=current_user,
+            author=author
+        )
         if subscription.exists():
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-            {'errors': 'Вы не подписаны на этого пользователя'}, 
+            {'errors': 'Вы не подписаны на этого пользователя'},
             status=status.HTTP_400_BAD_REQUEST
         )

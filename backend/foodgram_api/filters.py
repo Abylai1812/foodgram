@@ -5,11 +5,16 @@
 
 import django_filters
 from django_filters.rest_framework import filters
+
 from foodgram_api.models import Recipes, Tags
 
 
 class RecipeFilter(django_filters.FilterSet):
-    """Настройка фильтрация рецептов по тегам, избранным, автору, спискам покупок"""
+    """
+    Настройка фильтрация рецептов.
+
+    По тегам, избранным, автору, спискам покупок.
+    """
 
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
@@ -17,13 +22,15 @@ class RecipeFilter(django_filters.FilterSet):
         queryset=Tags.objects.all(),
     )
     is_favorited = filters.BooleanFilter(method='filter_is_favorited')
-    is_in_shoppping_cart = filters.BooleanFilter(method='filter_is_in_shoppping_cart')
+    is_in_shoppping_cart = filters.BooleanFilter(
+        method='filter_is_in_shoppping_cart')
 
     class Meta:
         """Мета-класс для настройки класса RecipeFilter."""
-        model=Recipes
+
+        model = Recipes
         fields = ('author', 'tags', 'is_favorited', 'is_in_shoppping_cart')
-    
+
     def filter_is_favorited(self, queryset, name, value):
         """Метод фильтрации по избарнным."""
         user = self.request.user

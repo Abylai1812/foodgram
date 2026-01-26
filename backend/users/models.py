@@ -1,5 +1,11 @@
+"""Модели для приложения users.
+
+Содержит модели для пользователей и подписок.
+"""
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 
 class User(AbstractUser):
     """Модель пользователя."""
@@ -11,7 +17,6 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=100, blank=False)
     last_name = models.CharField(max_length=100, blank=False)
     avatar = models.ImageField(upload_to='users/', null=True, default=None)
-
 
     class Meta(AbstractUser.Meta):
         """Мета-класс для настройки модели CustomUser."""
@@ -38,7 +43,6 @@ class Subscribe(models.Model):
         on_delete=models.CASCADE,
         related_name='subscribers'
     )
-
 
     class Meta:
         """Мета-класс для настройки модели Subscribe."""

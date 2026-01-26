@@ -9,12 +9,12 @@ from rest_framework.permissions import SAFE_METHODS
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
-    """Общепроектный пермишен для рецептов,подписки,избранные."""
+    """Общепроектный пермишен для рецептов, подписки, избранные."""
 
     message = 'Изменение чужой записи запрещено!'
 
-
     def has_object_permission(self, request, view, obj):
+        """Проверка прав доступа к объекту для автора."""
         if request.method in SAFE_METHODS:
             return True
         return (

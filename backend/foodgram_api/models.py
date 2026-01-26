@@ -5,7 +5,6 @@
 
 
 from django.db import models
-
 from users.models import User
 
 
@@ -14,7 +13,6 @@ class Tags(models.Model):
 
     name = models.CharField('Название', max_length=200)
     slug = models.SlugField('Слаг', max_length=100)
-
 
     class Meta:
         """Мета-класс для настройки модели Tags."""
@@ -39,7 +37,6 @@ class Ingredients(models.Model):
     name = models.CharField('Название', max_length=200)
     measurement_unit = models.CharField('Единица измерения', max_length=10)
 
-
     class Meta:
         """Мета-класс для настройки модели Tags."""
 
@@ -56,15 +53,18 @@ class Recipes(models.Model):
 
     name = models.CharField('Название', max_length=200)
     text = models.TextField('Текстовое описание')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               related_name='recipes')
     image = models.ImageField(upload_to='foodgram_api/', blank=True, null=True)
-    ingredients = models.ManyToManyField(Ingredients, through='RecipeIngredient', related_name='recipes')
+    ingredients = models.ManyToManyField(Ingredients,
+                                         through='RecipeIngredient',
+                                         related_name='recipes')
     tags = models.ManyToManyField(Tags, related_name='recipes')
-    cooking_time = models.PositiveSmallIntegerField('Время приготовления в минутах')
+    cooking_time = models.PositiveSmallIntegerField(
+        'Время приготовления в минутах')
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True
     )
-
 
     class Meta:
         """Мета-класс для настройки модели Recipes."""
@@ -72,7 +72,6 @@ class Recipes(models.Model):
         ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-
 
     def __str__(self):
         """Возвращает строковое представление рецептов (название)."""
@@ -95,8 +94,8 @@ class Favorite(models.Model):
     """Модель избранное."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='favorite_recipe')
-
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE,
+                               related_name='favorite_recipe')
 
     class Meta:
         """Мета-класс для настройки модели Favorite."""
@@ -110,7 +109,7 @@ class Favorite(models.Model):
                 name='unique_favorite'
             )
         ]
-    
+
     def __str__(self):
         """Возвращает строковое представление избранных."""
         return f'{self.user} {self.recipe}'
@@ -119,9 +118,10 @@ class Favorite(models.Model):
 class ShoppingCart(models.Model):
     """Модель список покупок."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
-    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='in_carts')
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='cart_items')
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE,
+                               related_name='in_carts')
 
     class Meta:
         """Мета-класс для настройки модели ShoppingCart."""
@@ -134,7 +134,7 @@ class ShoppingCart(models.Model):
                 name='unique_cart'
             )
         ]
-    
+
     def __str__(self):
         """Возвращает строковое представление список покупок."""
         return f'{self.user} {self.recipe}'

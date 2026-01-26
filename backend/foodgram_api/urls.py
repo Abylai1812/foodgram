@@ -8,7 +8,13 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import RecipesViewSet, IngredientsViewSet, TagsViewSet, UserViewSet, redirect_to_recipe
+from .views import (
+    IngredientsViewSet,
+    RecipesViewSet,
+    TagsViewSet,
+    UserViewSet,
+    redirect_to_recipe
+)
 
 
 router = DefaultRouter()

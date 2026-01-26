@@ -9,6 +9,8 @@ from users.models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+    """Настройка админ части пользователя."""
+
     list_display = (
         'username',
         'email',
