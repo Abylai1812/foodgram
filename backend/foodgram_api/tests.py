@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 
-from foodgram_api.models import Recipe, Ingredient, Tag
+from foodgram_api.models import Recipes, Ingredients, Tags
 
 User = get_user_model()
 
@@ -29,12 +29,12 @@ class RecipeCreateAPITestCase(TestCase):
             password='testpassword'
         )
 
-        self.tag = Tag.objects.create(
+        self.tag = Tags.objects.create(
             name='Завтрак',
             slug='breakfast'
         )
 
-        self.ingredient = Ingredient.objects.create(
+        self.ingredient = Ingredients.objects.create(
             name='Яйцо',
             measurement_unit='шт'
         )
@@ -86,7 +86,7 @@ class RecipeCreateAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(
-            Recipe.objects.filter(
+            Recipes.objects.filter(
                 name='Test recipe',
                 author=self.user
             ).exists()
