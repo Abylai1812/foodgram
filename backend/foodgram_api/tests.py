@@ -4,7 +4,8 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import TestCase
+from rest_framework.test import APIClient
 
 from foodgram_api.models import Recipes, Ingredients, Tags
 
@@ -16,18 +17,15 @@ class RecipeCreateAPITestCase(TestCase):
 
     def setUp(self):
         """Подготовка данных для тестов."""
-        self.guest_client = Client()
+        self.guest_client = APIClient()
 
         self.user = User.objects.create_user(
             username='testuser',
             password='testpassword'
         )
 
-        self.auth_client = Client()
-        self.auth_client.login(
-            username='testuser',
-            password='testpassword'
-        )
+        self.auth_client = APIClient()
+        self.auth_client.force_authenticate(user=self.user)
 
         self.tag = Tags.objects.create(
             name='Завтрак',
@@ -69,7 +67,8 @@ class RecipeCreateAPITestCase(TestCase):
         """Гость не может создать рецепт."""
         response = self.guest_client.post(
             '/api/recipes/',
-            data=self.get_valid_recipe_data()
+            data=self.get_valid_recipe_data(),
+            format='multipart'  # ← важно для image
         )
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
@@ -81,7 +80,8 @@ class RecipeCreateAPITestCase(TestCase):
         """
         response = self.auth_client.post(
             '/api/recipes/',
-            data=self.get_valid_recipe_data()
+            data=self.get_valid_recipe_data(),
+            format='multipart'  # ← важно для image
         )
 
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
