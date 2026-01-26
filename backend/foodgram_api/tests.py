@@ -83,7 +83,7 @@ class RecipeCreateAPITestCase(TestCase):
             data=self.get_valid_recipe_data(),
             format='multipart'  # ← важно для image
         )
-
+        print(response.data)
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
         self.assertTrue(
             Recipes.objects.filter(
