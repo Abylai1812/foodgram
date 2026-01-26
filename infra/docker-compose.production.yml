@@ -32,4 +32,6 @@ services:
     ports:
       - "9090:80"
     volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/staticfiles/static/
+      - media_volume:/staticfiles/media/
