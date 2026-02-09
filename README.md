@@ -87,22 +87,15 @@ sudo docker compose -f docker-compose.production.yml exec backend python load_in
 sudo docker compose -f docker-compose.production.yml exec backend python load_tags
 ```
 7) Проект доступен по адресу:
-```bash
 [foodgram.redirectme.net](https://foodgram.redirectme.net)
-```
  - Доступ к API документации
-```bash
 [foodgram.redirectme.net/api/docs/](https://foodgram.redirectme.net/api/docs/)
-```
  - Доступ к API серверу
-```bash
 [foodgram.redirectme.net/api/](https://foodgram.redirectme.net/api/)
-```
 - Доступ к админ
-```bash
 [foodgram.redirectme.net/admin/](https://foodgram.redirectme.net/admin/)
-```
 # Автор
--**Мошанов Абылай**
--**GitHub: https://github.com/Abylai1812**
--**Dockerhub: https://hub.docker.com/juniorabylai**
+Мошанов Абылай  
+
+- GitHub: [Abylai1812](https://github.com/Abylai1812)  
+- Docker Hub: [juniorabylai](https://hub.docker.com/juniorabylai)
