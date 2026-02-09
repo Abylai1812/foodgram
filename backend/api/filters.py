@@ -6,7 +6,7 @@
 import django_filters
 from django_filters.rest_framework import filters
 
-from foodgram_api.models import Recipes, Tags
+from recipes.models import Recipes, Tags
 
 
 class RecipeFilter(django_filters.FilterSet):

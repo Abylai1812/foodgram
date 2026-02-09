@@ -14,7 +14,8 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('foodgram_api.urls')),
+    path('api/', include('api.urls')),
+    path('recipes/', include('recipes.urls')),
 
     path(
         'redoc/',

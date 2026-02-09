@@ -3,7 +3,7 @@
 import json
 import os
 from django.core.management.base import BaseCommand
-from foodgram_api.models import Ingredients
+from recipes.models import Ingredients
 
 
 class Command(BaseCommand):

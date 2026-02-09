@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from foodgram_api.models import Recipes, Ingredients, Tags
+from recipes.models import Recipes, Ingredients, Tags
 
 User = get_user_model()
 
