@@ -103,6 +103,6 @@ sudo docker compose -f docker-compose.production.yml exec backend python load_ta
 [foodgram.redirectme.net/admin/](https://foodgram.redirectme.net/admin/)
 ```
 # Автор
-Мошанов Абылай
-GitHub: https://github.com/Abylai1812
-Dockerhub: https://hub.docker.com/juniorabylai
+**Мошанов Абылай**
+**GitHub: https://github.com/Abylai1812**
+**Dockerhub: https://hub.docker.com/juniorabylai**
