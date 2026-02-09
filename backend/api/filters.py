@@ -31,12 +31,12 @@ class RecipeFilter(django_filters.FilterSet):
         model = Recipes
         fields = ('author', 'tags', 'is_favorited', 'is_in_shoppping_cart')
 
-    def filter_is_favorited(self, queryset, name, value):
+    def filter_is_favorited(self, favorites, name, value):
         """Метод фильтрации по избарнным."""
         user = self.request.user
         if value and user.is_authenticated:
-            queryset = queryset.filter(favorite_recipe__user=user)
-        return queryset
+            favorites = favorites.filter(favorite_recipe__user=user)
+        return favorites
 
     def filter_is_in_shoppping_cart(self, queryset, name, value):
         """Метод фильтрации по спискам покупок."""

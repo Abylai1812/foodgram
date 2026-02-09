@@ -21,10 +21,11 @@ from rest_framework.response import Response
 
 from api.filters import RecipeFilter
 from recipes.models import (
-    Favorite, Ingredients, RecipeIngredient,
-    Recipes, ShoppingCart, Tags, Subscribe, User
+    Favorite, Ingredients,
+    Recipes, ShoppingCart,
+    Tags, Subscribe, User
 )
-from api.pagination import BasePagination
+from api.pagination import RecipePagination
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (
     IngredientsSerializer,
@@ -46,7 +47,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     queryset = Recipes.objects.all().order_by('-pub_date')
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
-    pagination_class = BasePagination
+    pagination_class = RecipePagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 

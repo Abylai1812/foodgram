@@ -15,8 +15,6 @@ from api.views import (
     UserViewSet
 )
 
-
-
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')
 router.register(r'recipes', RecipesViewSet, basename='recipes')
@@ -26,6 +24,6 @@ router.register(r'tags', TagsViewSet, basename='tags')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include('djoser.urls')),
+    # path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken'))
 ]

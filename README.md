@@ -5,18 +5,61 @@
 Автоматизация настроено с помощью сервиса GitHub Actions.При пуше в ветку проект тестируется,в случае успешного прохождения тестов образы обновляется на Docker Hub,
 на сервере запущены контейнеры из обновлённых образов.
 # Технологический стек
-Backend: Python, Django, Django REST Framework
-Frontend: React
-База данных: PostgreSQL
-Контейнеризация: Docker, Docker Compose
-CI/CD: GitHub Actions
-Web server / reverse proxy: Nginx
+**Backend:**
+- Python
+- Django
+- Django REST Framework
+
+**Frontend:**
+- React
+
+**База данных::**
+- PostgreSQL
+
+**Контейнеризация:**
+- Docker
+-Docker Compose
+
+**CI/CD:**
+- GitHub Actions
+
+**Web server / reverse proxy:**
+- Nginx
 # Развёртывание проекта
 1) Клонировать репозиторий и перейти в него в командной строке:
 ```bash
 git clone https://github.com/Abylai1812/foodgram.git
+cd foodgram
 ```
-2) Создаем файл .env в корне проекта.
+2) Запускаем проект локально
+ - Переходим папку backend:
+```bash
+cd backend
+```
+ - Создать активировать виртуальное окружение и установить зависимости:
+```bash
+python -m venv venv
+source venv/Scripts/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+ - Выполнить миграции и загружаем фикстуры:
+```bash
+python manage.py migrate
+python manage.py load_ingredients
+python manage.py load_tags
+```
+ - Запустить backend:  
+```bash
+python manage.py runserver
+```
+ - В отдельном терминале запустить frontend:
+```bash
+cd frontend
+npm install
+npm start
+```
+3) Создаем файл .env в корне проекта.
 ```bash
 # Пример файла env
 SECRET_KEY=ваш_секретный_ключ
@@ -29,20 +72,37 @@ POSTGRES_DB=django_db
 DB_HOST=db
 DB_PORT=5432
 ```
-3) Поднимаем контейнеры
+4) Поднимаем контейнеры
 ```bash
+cd infra
 sudo docker compose -f docker-compose.production.yml up -d
 ```
-4) Применяем миграции
+5) Применяем миграции
 ```bash
 sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
 ```
-5) Домен:
+6) Загрузить фикстуры
 ```bash
-https://foodgram.redirectme.net
+sudo docker compose -f docker-compose.production.yml exec backend python load_ingredients
+sudo docker compose -f docker-compose.production.yml exec backend python load_tags
+```
+7) Проект доступен по адресу:
+```bash
+[foodgram.redirectme.net](https://foodgram.redirectme.net)
+```
+ - Доступ к API документации
+```bash
+[foodgram.redirectme.net/api/docs/](https://foodgram.redirectme.net/api/docs/)
+```
+ - Доступ к API серверу
+```bash
+[foodgram.redirectme.net/api/](https://foodgram.redirectme.net/api/)
+```
+- Доступ к админ
+```bash
+[foodgram.redirectme.net/admin/](https://foodgram.redirectme.net/admin/)
 ```
 # Автор
 Мошанов Абылай
 GitHub: https://github.com/Abylai1812
 Dockerhub: https://hub.docker.com/juniorabylai
-

@@ -7,7 +7,7 @@
 from rest_framework.pagination import PageNumberPagination
 
 
-class BasePagination(PageNumberPagination):
+class RecipePagination(PageNumberPagination):
     """Базовая настройка пагинации."""
 
     page_size = 6
