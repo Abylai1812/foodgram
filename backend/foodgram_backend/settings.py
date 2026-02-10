@@ -117,7 +117,6 @@ STATIC_ROOT = '/app/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
 
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -127,14 +126,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.BasePagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.RecipePagination',
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user_create': 'api.serializers.UserCreateSerializer',
-        'user': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.UserSerializer'
-    }
+        'user': 'api.serializers.BaseUserSerializer',
+        'current_user': 'api.serializers.BaseUserSerializer',
+    },
 }

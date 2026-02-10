@@ -152,6 +152,15 @@ class RecipesReadSerializer(serializers.ModelSerializer):
         return self.get_user_recipe_status(obj, ShoppingCart)
 
 
+def check_duplicates(items, field_name):
+    """Проверяет список на дубли и показывает все повторяющиеся значения."""
+    duplicates = sorted({item for item in items if items.count(item) > 1})
+    if duplicates:
+        raise serializers.ValidationError(
+            f'{field_name} не должны повторяться: {duplicates}.'
+        )
+
+
 class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для создание и обновление модели.
 
@@ -173,14 +182,7 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients', 'image',
             'name', 'text', 'cooking_time'
         )
-    
-    def check_duplicates(items, field_name):
-        """Проверяет список на дубли и показывает все повторяющиеся значения."""
-        duplicates = sorted({item for item in items if items.count(item) > 1})
-        if duplicates:
-            raise serializers.ValidationError(
-                f'{field_name} не должны повторяться: {duplicates}.'
-            )
+        read_only_fields = ('author',) 
 
     def validate(self, data):
         """Метод валидации ингредиентов и тегов."""
@@ -242,7 +244,7 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
 
         instance.tags.set(tags_data)
 
-        instance.recipe_ingredients.delete()
+        instance.recipe_ingredients.all().delete()
         self.create_ingredients_set(instance, ingredients_data)
 
         return instance

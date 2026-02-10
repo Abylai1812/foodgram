@@ -35,12 +35,12 @@ class RecipeFilter(django_filters.FilterSet):
         """Метод фильтрации по избарнным."""
         user = self.request.user
         if value and user.is_authenticated:
-            favorites = favorites.filter(favorite_recipe__user=user)
+            favorites = favorites.filter(favorite_set__user=user)
         return favorites
 
     def filter_is_in_shoppping_cart(self, queryset, name, value):
         """Метод фильтрации по спискам покупок."""
         user = self.request.user
         if value and user.is_authenticated:
-            queryset = queryset.filter(in_carts__user=user)
+            queryset = queryset.filter(shoppingcart_set__user=user)
         return queryset

@@ -4,7 +4,7 @@
 с рецептами, ингредиентами, тегами и пользователями через REST API.
 """
 
-
+from io import BytesIO
 from django.core.exceptions import ValidationError
 from django.http import FileResponse
 from django.urls import reverse
@@ -73,7 +73,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             get_object_or_404(
-                model=model,
+                model,
                 user=current_user,
                 recipe_id=recipe_id
             ).delete()
@@ -106,7 +106,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return self.create_or_delete_relation(
             request,
             model=Favorite,
-            pk=pk
         )
 
     @action(
@@ -135,7 +134,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
        
         if file_format == 'txt':
             response = FileResponse(
-                formatting_shoppinglist(request).encode('utf-8'),
+                BytesIO(formatting_shoppinglist(request).encode('utf-8')),
                 as_attachment=True,
                 filename=f'shopping_cart.{file_format}'
             )
@@ -201,9 +200,8 @@ class UserViewSet(DjoserUserViewSet):
         """Метод настройки аватара добавление и удаление."""
         user = request.user
         if request.method == 'DELETE':
-            if user.avatar:
-                user.avatar.delete(save=True)
-                return Response(status=status.HTTP_204_NO_CONTENT)
+            user.avatar.delete(save=True)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = UserAvatarSerializer(
             user,
@@ -222,13 +220,13 @@ class UserViewSet(DjoserUserViewSet):
     )
     def get_subscriptions(self, request):
         """Метод настройки получение всех подписчиков."""
-        queryset = User.objects.filter(subscribers__user=request.user)
+        queryset = User.objects.filter(author_subscriptions__user=request.user)
         page = self.paginate_queryset(queryset)
         
         serializer = AuthorWithRecipesSerializer(
             page,
             many=True,
-            context={'reuest': request}
+            context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
 

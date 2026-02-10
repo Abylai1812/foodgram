@@ -39,7 +39,7 @@ class ProfileUserAdmin(UserAdmin):
         return obj.recipes.count()
     
     def followers_count(self, obj):
-        return obj.subscribers.count()
+        return obj.author_subscriptions.count()
     
     def following_count(self, obj):
         return obj.subscriptions.count()

@@ -1,12 +1,14 @@
-Список покупок для: {{ user }}
+Список покупок для: {{ user.username }}
 Дата: {{ date }}
 
 Продукты:
-{% for name, info in ingredients.items %}
-{{ forloop.counter }}. {{ name|title }} ({{ info.measurement_unit }}) — {{ info.amount }}
+{% for ingredient in ingredients %}
+{{ forloop.counter }}. {{ ingredient.ingredient__name|title }} ({{ ingredient.ingredient__measurement_unit }}) — {{ ingredient.total_amount }}
+{% empty %}
+— Нет продуктов —
 {% endfor %}
 
 Рецепты:
 {% for item in recipes %}
-- {{ item.recipe.name }} — {{ item.recipe.author }}
+- {{ item.recipe.name }} — {{ item.recipe.author.username }}
 {% endfor %}

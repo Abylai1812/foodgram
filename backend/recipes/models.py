@@ -11,7 +11,7 @@ from django.core.validators import RegexValidator, MinValueValidator
 
 
 username_validator = RegexValidator(
-    regex=r'^[\w.@+-]+\z',
+    regex=r'^[\w.@+-]+$',
     message='Имя пользователя может содержать только буквы, цифры и символы',
     code='invalid_username'
 )
