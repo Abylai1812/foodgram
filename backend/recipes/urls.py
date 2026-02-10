@@ -1,5 +1,4 @@
-"""URL-маршруты приложении recipes проекта Foodgram.
-"""
+"""URL-маршруты приложении recipes проекта Foodgram."""
 
 
 from django.urls import path

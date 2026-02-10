@@ -34,7 +34,7 @@ from api.serializers import (
     RecipesReadSerializer,
     TagsSerializer,
     UserAvatarSerializer,
-   AuthorWithRecipesSerializer
+    AuthorWithRecipesSerializer
 )
 from recipes.utills.shopping_list import formatting_shoppinglist
 
@@ -129,9 +129,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         """Скачивает список покупок пользователя в нужном формате."""
-
         file_format = request.query_params.get('file_format', 'txt')
-       
+
         if file_format == 'txt':
             response = FileResponse(
                 BytesIO(formatting_shoppinglist(request).encode('utf-8')),
@@ -151,7 +150,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         """Метод получение короткий ссылки на рецепт."""
         return Response({
             'short-link': request.build_absolute_uri(
-            reverse('short_link_redirect', kwargs={'pk': pk})
+                reverse('short_link_redirect', kwargs={'pk': pk})
             )
         })
 
@@ -223,14 +222,13 @@ class UserViewSet(DjoserUserViewSet):
         """Метод настройки получение всех подписчиков."""
         queryset = User.objects.filter(author_subscriptions__user=request.user)
         page = self.paginate_queryset(queryset)
-        
+
         serializer = AuthorWithRecipesSerializer(
             page,
             many=True,
             context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
-
 
     @action(
         detail=True,
@@ -252,7 +250,7 @@ class UserViewSet(DjoserUserViewSet):
             return Response(
                 status=status.HTTP_204_NO_CONTENT
             )
-        
+
         if current_user == author:
             raise ValidationError('Нельзя подписаться на самого себя.')
 
@@ -261,7 +259,7 @@ class UserViewSet(DjoserUserViewSet):
             author=author
         ).exists():
             raise ValidationError('Вы подписаны на этого человека.')
-        
+
         Subscribe.objects.create(user=current_user, author=author)
 
         return Response(

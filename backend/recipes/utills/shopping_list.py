@@ -1,5 +1,5 @@
 """Модуль которая работаетс списком покупок.
-  
+
 Формирует словарь ингредиентов и возвращает отформатированную строку.
 """
 
@@ -19,14 +19,16 @@ def get_shopping_ingredients(user):
     cart_ingredients = RecipeIngredient.objects.filter(
         recipe__shoppingcart_set__user=user).values(
         'ingredient__name', 'ingredient__measurement_unit').annotate(
-            total_amount=Sum('amount')).order_by('ingredient__name'
-    )
+            total_amount=Sum('amount')).order_by('ingredient__name')
 
     return cart_ingredients
 
 
 def formatting_shoppinglist(request):
-    """Функция принимает данные списка покупок и возвращает отформатированную строку."""
+    """Функция принимает данные списка покупок.
+
+    Возвращает отформатированную строку.
+    """
     ingredients = get_shopping_ingredients(request.user)
     recipes = ShoppingCart.objects.filter(
         user=request.user
@@ -43,5 +45,3 @@ def formatting_shoppinglist(request):
         'shopping_list.txt',
         context
     )
-
-    

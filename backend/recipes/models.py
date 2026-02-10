@@ -1,6 +1,7 @@
 """Модели для приложения recipes.
 
-Содержит модели для рецептов, тегов, ингредиентов, избранное, список покупок, пользователей и подписок.
+Содержит модели для рецептов, тегов, ингредиентов, избранное,
+список покупок, пользователей и подписок.
 """
 
 
@@ -16,6 +17,7 @@ username_validator = RegexValidator(
     code='invalid_username'
 )
 
+
 class User(AbstractUser):
     """Модель пользователя."""
 
@@ -24,14 +26,17 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     email = models.EmailField(max_length=254, unique=True)
-    username = models.CharField('Имя пользователя',
+    username = models.CharField(
+        'Имя пользователя',
         max_length=150,
         unique=True,
         validators=[username_validator]
     )
     first_name = models.CharField('Имя', max_length=150, blank=False)
     last_name = models.CharField('Фамилия', max_length=150, blank=False)
-    avatar = models.ImageField('Аватар', upload_to='users/', null=True, default=None)
+    avatar = models.ImageField(
+        'Аватар', upload_to='users/', null=True, default=None
+    )
 
     class Meta(AbstractUser.Meta):
         """Мета-класс для настройки модели CustomUser."""
@@ -122,7 +127,9 @@ class Recipes(models.Model):
         related_name='recipes',
         verbose_name='Автор'
     )
-    image = models.ImageField('Фото', upload_to='recipes/', blank=True, null=True)
+    image = models.ImageField(
+        'Фото', upload_to='recipes/', blank=True, null=True
+    )
     ingredients = models.ManyToManyField(
         Ingredients,
         through='RecipeIngredient',
@@ -170,7 +177,7 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент'
     )
     amount = models.PositiveIntegerField(
-        'Количество', 
+        'Количество',
         validators=[MinValueValidator(1)]
     )
 
@@ -192,7 +199,7 @@ class UserRecipeRelation(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='%(class)s_items'
-        )
+    )
     recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,

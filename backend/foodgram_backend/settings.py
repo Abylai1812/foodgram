@@ -1,3 +1,11 @@
+"""
+Настройки Django для проекта Foodgram.
+
+Содержит конфигурацию базы данных, аутентификации, путей к статике,
+медиафайлов и сторонних приложений.
+"""
+
+
 import os
 from pathlib import Path
 
@@ -65,9 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "foodgram_backend.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # DATABASES = {
 #     'default': {

@@ -22,7 +22,6 @@ from recipes.models import (
 from api.constans import MIN_COOKING_TIME
 
 
-
 class Base64ImageField(serializers.ImageField):
     """Поле для обработки изображений, закодированных в Base64."""
 
@@ -53,8 +52,13 @@ class BaseUserSerializer(UserSerializer):
     def get_is_subscribed(self, author):
         """Метод настройки подписки на пользователя True/False."""
         request = self.context.get('request')
-        return request and request.user.is_authenticated and Subscribe.objects.filter(
-            user=request.user, author=author).exists()
+        return (
+            request
+            and request.user.is_authenticated
+            and Subscribe.objects.filter(
+                user=request.user, author=author
+            ).exists()
+        )
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
@@ -140,8 +144,13 @@ class RecipesReadSerializer(serializers.ModelSerializer):
         Есть ли рецепт в избарнных и списке покупок.
         """
         request = self.context.get('request')
-        return request and request.user.is_authenticated and model.objects.filter(
-            user=request.user, recipe=obj).exists()
+        return (
+            request
+            and request.user.is_authenticated
+            and model.objects.filter(
+                user=request.user, recipe=obj
+            ).exists()
+        )
 
     def get_is_favorited(self, obj):
         """Метод настройки избранных для рецепта True/False."""
@@ -182,7 +191,7 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients', 'image',
             'name', 'text', 'cooking_time'
         )
-        read_only_fields = ('author',) 
+        read_only_fields = ('author',)
 
     def validate(self, data):
         """Метод валидации ингредиентов и тегов."""
@@ -239,7 +248,7 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
         """Метод для обновление рецепта."""
         tags_data = validated_data.pop('tags', None)
         ingredients_data = validated_data.pop('ingredients', None)
-        
+
         instance = super().update(instance, validated_data)
 
         instance.tags.set(tags_data)
@@ -290,7 +299,10 @@ class AuthorWithRecipesSerializer(BaseUserSerializer):
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
     class Meta:
-        """Мета-класс для настройки сериализатора AuthorWithRecipesSerializer."""
+        """Мета-класс для настройки.
+
+        Сериализатора AuthorWithRecipesSerializer.
+        """
 
         model = User
         fields = BaseUserSerializer.Meta.fields + ('recipes', 'recipes_count')
