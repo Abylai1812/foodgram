@@ -4,13 +4,11 @@
 """
 
 
-from django.http import HttpResponseNotFound
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from recipes.models import Recipes
 
 
 def redirect_to_recipe(request, pk):
     """Перенаправляет с короткой ссылки на страницу рецепта."""
-    if not Recipes.objects.filter(pk=pk).exists():
-       return HttpResponseNotFound('Рецепт не найден')
-    return redirect(f'/recipes/{pk}/')
+    recipe = get_object_or_404(Recipes, pk=pk)
+    return redirect(f'/recipes/{recipe.id}/')

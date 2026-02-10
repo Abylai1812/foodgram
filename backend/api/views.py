@@ -5,7 +5,6 @@
 """
 
 from io import BytesIO
-from django.core.exceptions import ValidationError
 from django.http import FileResponse
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
@@ -13,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import (
     AllowAny, IsAuthenticated,
     IsAuthenticatedOrReadOnly
@@ -200,8 +200,9 @@ class UserViewSet(DjoserUserViewSet):
         """Метод настройки аватара добавление и удаление."""
         user = request.user
         if request.method == 'DELETE':
-            user.avatar.delete(save=True)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            if user.avatar:
+                user.avatar.delete(save=True)
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = UserAvatarSerializer(
             user,

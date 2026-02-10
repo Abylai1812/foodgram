@@ -22,14 +22,14 @@ class RecipeFilter(django_filters.FilterSet):
         queryset=Tags.objects.all(),
     )
     is_favorited = filters.BooleanFilter(method='filter_is_favorited')
-    is_in_shoppping_cart = filters.BooleanFilter(
-        method='filter_is_in_shoppping_cart')
+    is_in_shopping_cart = filters.BooleanFilter(
+        method='filter_is_in_shopping_cart')
 
     class Meta:
         """Мета-класс для настройки класса RecipeFilter."""
 
         model = Recipes
-        fields = ('author', 'tags', 'is_favorited', 'is_in_shoppping_cart')
+        fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
 
     def filter_is_favorited(self, favorites, name, value):
         """Метод фильтрации по избарнным."""
@@ -38,7 +38,7 @@ class RecipeFilter(django_filters.FilterSet):
             favorites = favorites.filter(favorite_set__user=user)
         return favorites
 
-    def filter_is_in_shoppping_cart(self, queryset, name, value):
+    def filter_is_in_shopping_cart(self, queryset, name, value):
         """Метод фильтрации по спискам покупок."""
         user = self.request.user
         if value and user.is_authenticated:
