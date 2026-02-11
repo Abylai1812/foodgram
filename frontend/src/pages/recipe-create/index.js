@@ -73,7 +73,7 @@ const RecipeCreate = ({ onEdit }) => {
       if (ingredientValue.name === "") {
         return setIngredients([]);
       }
-      api.getIngredients({ name: ingredientValue.name }).then((ingredients) => {
+      api.getIngredients({ search: ingredientValue.name }).then((ingredients) => {
         setIngredients(ingredients);
       });
     },

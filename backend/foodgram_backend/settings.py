@@ -73,7 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "foodgram_backend.wsgi.application"
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -84,7 +83,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -126,6 +124,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.RecipePagination',
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+    ],
 }
 
 DJOSER = {
