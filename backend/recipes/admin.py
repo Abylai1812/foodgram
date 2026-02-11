@@ -85,7 +85,7 @@ class RecipesAdmin(admin.ModelAdmin):
 
         Которые добавивших данный рецепт в избранное.
         """
-        return obj.favorite_recipe.count()
+        return obj.favorite_set.count()
 
     def tags_preview(self, obj):
         """Возвращает строковое представление всех тегов рецепта."""
@@ -117,8 +117,13 @@ class IngredientsAdmin(admin.ModelAdmin):
     list_filter = ('measurement_unit',)
 
     def recipes_count(self, obj):
-        """Метод возвращает общее количества рецептов."""
+        """Метод возвращает общее количества рецептов.
+
+        В которых есть этот ингредиент.
+        """
         return obj.ingredient_recipes.count()
+
+    recipes_count.short_description = 'Количества в рецептах'
 
 
 @admin.register(Tags)
@@ -129,5 +134,10 @@ class TagsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
 
     def recipes_count(self, obj):
-        """Метод возвращает общее количества рецептов."""
+        """Метод возвращает общее количества рецептов.
+
+        В которых есть этот тег.
+        """
         return obj.recipes.count()
+
+    recipes_count.short_description = 'Количества в рецептах'
