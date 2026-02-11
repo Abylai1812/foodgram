@@ -4,37 +4,44 @@
 с рецептами, ингредиентами, тегами и пользователями через REST API.
 """
 
+
 from io import BytesIO
+
 from django.http import FileResponse
-from django.urls import reverse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import status, viewsets, filters
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import (
-    AllowAny, IsAuthenticated,
-    IsAuthenticatedOrReadOnly
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter
-from recipes.models import (
-    Favorite, Ingredients,
-    Recipes, ShoppingCart,
-    Tags, Subscribe, User
-)
 from api.pagination import RecipePagination
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (
+    AuthorWithRecipesSerializer,
     IngredientsSerializer,
     RecipesCreateUpdateSerializer,
-    ShortRecipeSerializer,
     RecipesReadSerializer,
+    ShortRecipeSerializer,
     TagsSerializer,
     UserAvatarSerializer,
-    AuthorWithRecipesSerializer
+)
+from recipes.models import (
+    Favorite,
+    Ingredients,
+    Recipes,
+    ShoppingCart,
+    Subscribe,
+    Tags,
+    User,
 )
 from recipes.utills.shopping_list import formatting_shoppinglist
 

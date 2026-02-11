@@ -12,8 +12,9 @@ from api.views import (
     IngredientsViewSet,
     RecipesViewSet,
     TagsViewSet,
-    UserViewSet
+    UserViewSet,
 )
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')

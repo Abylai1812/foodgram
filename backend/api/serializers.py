@@ -10,16 +10,17 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
+from api.constans import MIN_COOKING_TIME
 from recipes.models import (
     Favorite,
     Ingredients,
     RecipeIngredient,
     Recipes,
     ShoppingCart,
+    Subscribe,
     Tags,
-    Subscribe, User
+    User,
 )
-from api.constans import MIN_COOKING_TIME
 
 
 class Base64ImageField(serializers.ImageField):

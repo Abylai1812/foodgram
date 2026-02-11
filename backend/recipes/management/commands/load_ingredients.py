@@ -1,8 +1,9 @@
 """Команда которым заполняем базу данных ингредиентами."""
 
 
-from .base_load import LoadJsonCommand
 from recipes.models import Ingredients
+
+from commands.base_load import LoadJsonCommand
 
 
 class Command(LoadJsonCommand):

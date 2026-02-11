@@ -1,8 +1,9 @@
 """Команда которым заполняем базу данных тегами."""
 
 
-from .base_load import LoadJsonCommand
 from recipes.models import Tags
+
+from commands.base_load import LoadJsonCommand
 
 
 class Command(LoadJsonCommand):
