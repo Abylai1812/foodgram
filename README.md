@@ -49,6 +49,10 @@ python manage.py migrate
 python manage.py load_ingredients
 python manage.py load_tags
 ```
+ - Создать суперпользователя:  
+```bash
+python manage.py createsuperuser
+```
  - Запустить backend:  
 ```bash
 python manage.py runserver

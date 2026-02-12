@@ -10,7 +10,7 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from api.constans import MIN_COOKING_TIME
+from recipes.constans import MIN_COOKING_TIME, MIN_AMOUNT
 from recipes.models import (
     Favorite,
     Ingredients,
@@ -75,7 +75,7 @@ class IngredientsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-class IngredientsReadSerializer(serializers.ModelSerializer):
+class RecipeIngredientReadSerializer(serializers.ModelSerializer):
     """Вспомогательный сериализатор для чтение записи ингредиентов."""
 
     id = serializers.IntegerField(source='ingredient.id')
@@ -86,7 +86,7 @@ class IngredientsReadSerializer(serializers.ModelSerializer):
     class Meta:
         """Мета-класс для настройки сериализатора.
 
-        IngredientReadSerializer.
+        RecipeIngredientReadSerializer.
         """
 
         model = RecipeIngredient
@@ -100,7 +100,7 @@ class IngredientsAmountSerilaizer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredients.objects.all()
     )
-    amount = serializers.IntegerField(min_value=MIN_COOKING_TIME)
+    amount = serializers.IntegerField(min_value=MIN_AMOUNT)
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -118,7 +118,7 @@ class RecipesReadSerializer(serializers.ModelSerializer):
 
     is_favorited = serializers.SerializerMethodField()
     author = BaseUserSerializer(read_only=True)
-    ingredients = IngredientsReadSerializer(
+    ingredients = RecipeIngredientReadSerializer(
         many=True,
         source='recipe_ingredients'
     )
@@ -164,7 +164,7 @@ class RecipesReadSerializer(serializers.ModelSerializer):
 
 def check_duplicates(items, field_name):
     """Проверяет список на дубли и показывает все повторяющиеся значения."""
-    duplicates = sorted({item for item in items if items.count(item) > 1})
+    duplicates = {item for item in items if items.count(item) > 1}
     if duplicates:
         raise serializers.ValidationError(
             f'{field_name} не должны повторяться: {duplicates}.'
@@ -189,10 +189,9 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
 
         model = Recipes
         fields = (
-            'id', 'tags', 'author', 'ingredients', 'image',
+            'id', 'tags', 'ingredients', 'image',
             'name', 'text', 'cooking_time'
         )
-        read_only_fields = ('author',)
 
     def validate(self, data):
         """Метод валидации ингредиентов и тегов."""
@@ -250,14 +249,12 @@ class RecipesCreateUpdateSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop('tags', None)
         ingredients_data = validated_data.pop('ingredients', None)
 
-        instance = super().update(instance, validated_data)
-
         instance.tags.set(tags_data)
 
         instance.recipe_ingredients.all().delete()
         self.create_ingredients_set(instance, ingredients_data)
 
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         """Возвращаем данные через сериализатор для чтения после POST/PATCH."""
@@ -296,7 +293,8 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 class AuthorWithRecipesSerializer(BaseUserSerializer):
     """Кастомный сериализатор для работы с подпиской пользователя."""
 
-    recipes = ShortRecipeSerializer(many=True)
+   
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
     class Meta:
@@ -307,4 +305,21 @@ class AuthorWithRecipesSerializer(BaseUserSerializer):
 
         model = User
         fields = BaseUserSerializer.Meta.fields + ('recipes', 'recipes_count')
-        read_only_fields = ('recipes', 'avatar')
+        read_only_fields = fields
+
+    def get_recipes(self, author):
+        """Метод настройки ограничение количества рецептов."""
+        request = self.context.get('request')
+        recipes = author.recipes.all()
+
+        recipes_limit = request.query_params.get('recipes_limit')
+
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        
+        return ShortRecipeSerializer(
+            recipes,
+            many=True,
+            context=self.context
+        ).data
+    
