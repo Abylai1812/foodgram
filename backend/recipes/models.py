@@ -29,7 +29,7 @@ class User(AbstractUser):
 
     email = models.EmailField('Электронная почта', max_length=254, unique=True)
     username = models.CharField(
-        'Пользователь',
+        'Логин',
         max_length=150,
         unique=True,
         validators=[username_validator]

@@ -77,7 +77,7 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
                 f'<img src="{user.avatar.url}" '
                 f'style="width:60px; height:60px;" />'
             )
-        return 'No avatar'
+        return ''
 
     @admin.display(description='Подписчики')
     def followers_count(self, user):
@@ -127,8 +127,7 @@ class RecipesAdmin(admin.ModelAdmin):
     @admin.display(description='Теги')
     def tags_preview(self, recipe):
         """Возвращает строковое представление всех тегов рецепта."""
-        tags = recipe.tags.all()
-        return ', '.join(tag.name for tag in tags)
+        return '\n '.join(tag.name for tag in recipe.tags.all())
 
     @admin.display(description='Ингредиенты')
     def ingredients_preview(self, recipe):

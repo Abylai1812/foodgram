@@ -12,5 +12,5 @@ from recipes.models import Recipes
 def redirect_to_recipe(request, pk):
     """Перенаправляет с короткой ссылки на страницу рецепта."""
     if not Recipes.objects.filter(pk=pk).exists():
-        raise Http404
+        raise Http404(f'Страница с рецептом ID {pk} не найдено.')
     return redirect(f'/recipes/{pk}/')
