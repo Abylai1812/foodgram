@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from recipes.models import RecipeIngredient, ShoppingCart
+from recipes.models import RecipeIngredient
 
 
 def get_shopping_ingredients(user):
@@ -16,12 +16,10 @@ def get_shopping_ingredients(user):
 
     Для список покупок текущего пользователя.
     """
-    cart_ingredients = RecipeIngredient.objects.filter(
-        recipe__shoppingcart_set__user=user).values(
+    return RecipeIngredient.objects.filter(
+        recipe__shoppingcarts__user=user).values(
         'ingredient__name', 'ingredient__measurement_unit').annotate(
             total_amount=Sum('amount')).order_by('ingredient__name')
-
-    return cart_ingredients
 
 
 def formatting_shoppinglist(request):
@@ -30,9 +28,7 @@ def formatting_shoppinglist(request):
     Возвращает отформатированную строку.
     """
     ingredients = get_shopping_ingredients(request.user)
-    recipes = ShoppingCart.objects.filter(
-        user=request.user
-    ).select_related('recipe__author')
+    recipes = request.user.shoppingcarts.select_related('recipe__author')
 
     context = {
         'user': request.user,

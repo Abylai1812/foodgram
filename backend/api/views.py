@@ -91,7 +91,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         if not created:
             raise ValidationError(
-                {'detail': f'Рецепт {recipe.name} уже добавлен в {model._meta.verbose_name}.'}
+                {'detail':
+                    f'Рецепт {recipe.name}'
+                    f'уже добавлен в {model._meta.verbose_name}.'}
             )
 
         return Response(ShortRecipeSerializer(
@@ -135,11 +137,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         """Скачивает список покупок пользователя в нужном формате."""
-       
         return FileResponse(
             formatting_shoppinglist(request),
             as_attachment=True,
-            filename=f'shopping_cart.txt'
+            filename='shopping_cart.txt'
         )
 
     @action(
@@ -150,7 +151,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def get_short_link(self, request, pk=None):
         """Метод получение короткий ссылки на рецепт."""
-        recipe =  get_object_or_404(Recipes, pk=pk)
+        recipe = get_object_or_404(Recipes, pk=pk)
         return Response({
             'short-link': request.build_absolute_uri(
                 reverse(
@@ -261,7 +262,7 @@ class UserViewSet(DjoserUserViewSet):
 
         if current_user == author:
             raise ValidationError('Нельзя подписаться на самого себя.')
-        
+
         _, created = Subscribe.objects.get_or_create(
             user=current_user,
             author=author

@@ -9,6 +9,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
+from recipes.constans import MIN_COOKING_TIME, MIN_AMOUNT
+
 
 username_validator = RegexValidator(
     regex=r'^[\w.@+-]+$',
@@ -24,9 +26,9 @@ class User(AbstractUser):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField('Электронная почта', max_length=254, unique=True)
     username = models.CharField(
-        'Имя пользователя',
+        'Пользователь',
         max_length=150,
         unique=True,
         validators=[username_validator]
@@ -142,7 +144,7 @@ class Recipes(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления в минутах',
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(MIN_COOKING_TIME)]
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True
@@ -172,12 +174,12 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredients,
         on_delete=models.CASCADE,
-        related_name='ingredient_recipes',
+        related_name='recipe_ingredients',
         verbose_name='Ингредиент'
     )
     amount = models.PositiveIntegerField(
         'Количество',
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(MIN_AMOUNT)]
     )
 
     class Meta:
@@ -197,12 +199,14 @@ class UserRecipeRelation(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(class)s_items'
+        related_name='%(class)ss',
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
-        related_name='%(class)s_set'
+        related_name='%(class)ss',
+        verbose_name='Рецепт'
     )
 
     class Meta:

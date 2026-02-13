@@ -6,7 +6,16 @@ from django.contrib.auth.admin import UserAdmin
 from django.db.models import Count
 from django.utils.safestring import mark_safe
 
-from recipes.models import Ingredients, Recipes, Tags, User
+from recipes.models import (
+    Favorite,
+    Ingredients,
+    RecipeIngredient,
+    Recipes,
+    ShoppingCart,
+    Subscribe,
+    Tags,
+    User,
+)
 
 
 class RecipesCountMixin:
@@ -51,8 +60,9 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
 
     @admin.display(description='ФИО')
     def full_name(self, user):
+        """Возваращает фамилия, имя пользователя."""
         return f'{user.first_name} {user.last_name}'
-    
+
     @admin.display(description='Рецепты')
     def recipes_count(self, user):
         """Возвращает количества рецептов у пользователя."""
@@ -79,6 +89,7 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
         """Возвращает количество подписок данного пользователя."""
         return user.subscriptions.count()
 
+
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
     """Настройка админ части рецептов."""
@@ -91,7 +102,7 @@ class RecipesAdmin(admin.ModelAdmin):
     search_fields = (
         'name', 'tags__name',
         'author__username',
-        'recipe_ingredients__ingredient__name'
+        'ingredients__name'
     )
     list_filter = ('tags', 'author')
 
@@ -111,7 +122,7 @@ class RecipesAdmin(admin.ModelAdmin):
 
         Которые добавивших данный рецепт в избранное.
         """
-        return recipe.favorite_set.count()
+        return recipe.favorites.count()
 
     @admin.display(description='Теги')
     def tags_preview(self, recipe):
@@ -130,11 +141,12 @@ class RecipesAdmin(admin.ModelAdmin):
             for i in items
         ))
 
+
 @admin.register(Ingredients)
 class IngredientsAdmin(RecipesCountMixin, admin.ModelAdmin):
     """Настройка админ части ингредиентов."""
 
-    recipe_relation = 'ingredient_recipes'
+    recipe_relation = 'recipe_ingredients'
 
     list_display = ('id', 'name', 'measurement_unit', 'recipes_count')
     search_fields = ('name', 'measurement_unit')
@@ -147,6 +159,7 @@ class IngredientsAdmin(RecipesCountMixin, admin.ModelAdmin):
         У которых есть этот ингредиент.
         """
         return self.get_recipes_count(user)
+
 
 @admin.register(Tags)
 class TagsAdmin(RecipesCountMixin, admin.ModelAdmin):
@@ -162,3 +175,39 @@ class TagsAdmin(RecipesCountMixin, admin.ModelAdmin):
         У которых есть этот тег.
         """
         return self.get_recipes_count(user)
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    """Настройка админ части избранных."""
+
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('recipe__name', 'user__username')
+    list_filter = ('user',)
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    """Настройка админ части список покупок."""
+
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('recipe__name', 'user__username')
+    list_filter = ('user',)
+
+
+@admin.register(Subscribe)
+class SubscribeAdmin(admin.ModelAdmin):
+    """Настройка админ части подписок."""
+
+    list_display = ('id', 'user', 'author')
+    search_fields = ('author__username', 'user__username')
+    list_filter = ('user',)
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    """Настройка админ части подписок."""
+
+    list_display = ('id', 'recipe', 'ingredient', 'amount')
+    search_fields = ('recipe__name', 'ingredient__name')
+    list_filter = ('recipe', 'ingredient')

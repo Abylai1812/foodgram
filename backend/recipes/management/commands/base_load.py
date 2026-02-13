@@ -19,13 +19,19 @@ class LoadJsonCommand(BaseCommand):
                 data_list = [
                     self.model(**item) for item in json.load(file)
                 ]
-            self.model.objects.bulk_create(data_list)
+            new_entries = self.model.objects.bulk_create(
+                data_list,
+                ignore_conflicts=True
+            )
 
             self.stdout.write(self.style.SUCCESS(
-                f'{len(data_list)} {self.model.__name__} успешно загружены!')
+                f'Фикстура: {self.path} загружены!'
+                f'{len(new_entries)} {self.model.__name__} успешно добавлены')
             )
 
         except Exception as error:
             self.stdout.write(
-                self.style.ERROR(f'Ошибка загрузки данных: {error}')
+                self.style.ERROR(
+                    f'Фикстура {self.path}: Ошибка загрузки данных: {error}'
+                )
             )

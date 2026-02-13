@@ -293,7 +293,6 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 class AuthorWithRecipesSerializer(BaseUserSerializer):
     """Кастомный сериализатор для работы с подпиской пользователя."""
 
-   
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
@@ -316,10 +315,9 @@ class AuthorWithRecipesSerializer(BaseUserSerializer):
 
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
-        
+
         return ShortRecipeSerializer(
             recipes,
             many=True,
             context=self.context
         ).data
-    
