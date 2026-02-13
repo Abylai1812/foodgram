@@ -3,13 +3,14 @@
 Модуль содержит ViewSet'ы для обработки CRUD операций.
 """
 
-
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
+from django.shortcuts import redirect
 
 from recipes.models import Recipes
 
 
 def redirect_to_recipe(request, pk):
     """Перенаправляет с короткой ссылки на страницу рецепта."""
-    recipe = get_object_or_404(Recipes, pk=pk)
-    return redirect(f'/recipes/{recipe.id}/')
+    if not Recipes.objects.filter(pk=pk).exists():
+        raise Http404
+    return redirect(f'/recipes/{pk}/')
