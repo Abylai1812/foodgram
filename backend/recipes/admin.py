@@ -21,22 +21,19 @@ from recipes.models import (
 class RecipesCountMixin:
     """Миксин для подсчета количества рецептов у объектов."""
 
-    recipe_relation = 'recipes'
+    recipes_list_display = ('recipes_count',)
 
     def get_queryset(self, request):
         """Оптимизируем запрос к базе данных."""
         queryset = super().get_queryset(request)
-        if self.recipe_relation:
-            return queryset.annotate(
-                rcount=Count(self.recipe_relation)
-            )
-        return queryset
+        return queryset.annotate(
+            recipes_count=Count('recipes')
+        )
 
-    def get_recipes_count(self, instance):
+    @admin.display(description='Рецепты')
+    def recipes_count(self, instance):
         """Возвращает количества рецептов."""
-        if not self.recipe_relation:
-            return '-'
-        return getattr(instance, 'rcount', 0)
+        return instance.recipes_count
 
 
 @admin.register(User)
@@ -49,9 +46,9 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
         'email',
         'full_name',
         'avatar_preview',
-        'recipes_count',
         'followers_count',
-        'following_count'
+        'following_count',
+        *RecipesCountMixin.recipes_list_display
     )
     list_display_links = ('username',)
     list_editable = ('email',)
@@ -60,13 +57,8 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
 
     @admin.display(description='ФИО')
     def full_name(self, user):
-        """Возваращает фамилия, имя пользователя."""
+        """ФИО пользователя."""
         return f'{user.first_name} {user.last_name}'
-
-    @admin.display(description='Рецепты')
-    def recipes_count(self, user):
-        """Возвращает количества рецептов у пользователя."""
-        return self.get_recipes_count(user)
 
     @admin.display(description='Аватар')
     @mark_safe
@@ -107,10 +99,11 @@ class RecipesAdmin(admin.ModelAdmin):
     list_filter = ('tags', 'author')
 
     @admin.display(description='Фото')
+    @mark_safe
     def image_recipe(self, recipe):
         """Генерирует HTML-тег для отображения изображения рецепта."""
         if recipe.image:
-            return mark_safe(
+            return (
                 f'<img src="{recipe.image.url}" '
                 f'style="width:100px; height:100px;" />'
             )
@@ -127,18 +120,17 @@ class RecipesAdmin(admin.ModelAdmin):
     @admin.display(description='Теги')
     def tags_preview(self, recipe):
         """Возвращает строковое представление всех тегов рецепта."""
-        tags = recipe.tags.all()
-        return ', '.join(tag.name for tag in tags)
+        return '<br>'.join(tag.name for tag in recipe.tags.all())
 
     @admin.display(description='Ингредиенты')
+    @mark_safe
     def ingredients_preview(self, recipe):
         """Возвращает краткий перечень названий ингредиентов."""
-        items = recipe.recipe_ingredients.select_related('ingredient')
 
-        return mark_safe('<br>'.join(
+        return ('<br>'.join(
             f'•{i.ingredient.name} - {i.amount} '
             f'{i.ingredient.measurement_unit}'
-            for i in items
+            for i in recipe.recipe_ingredients.select_related('ingredient')
         ))
 
 
@@ -146,53 +138,43 @@ class RecipesAdmin(admin.ModelAdmin):
 class IngredientsAdmin(RecipesCountMixin, admin.ModelAdmin):
     """Настройка админ части ингредиентов."""
 
-    recipe_relation = 'recipe_ingredients'
-
-    list_display = ('id', 'name', 'measurement_unit', 'recipes_count')
+    list_display = (
+        'id', 'name', 'measurement_unit',
+        *RecipesCountMixin.recipes_list_display
+    )
     search_fields = ('name', 'measurement_unit')
     list_filter = ('measurement_unit',)
-
-    @admin.display(description='Количества в рецептах')
-    def recipes_count(self, user):
-        """Метод возвращает общее количества рецептов.
-
-        У которых есть этот ингредиент.
-        """
-        return self.get_recipes_count(user)
 
 
 @admin.register(Tags)
 class TagsAdmin(RecipesCountMixin, admin.ModelAdmin):
     """Настройка админ части тегов."""
 
-    list_display = ('id', 'name', 'slug', 'recipes_count')
+    list_display = (
+        'id', 'name', 'slug',
+        *RecipesCountMixin.recipes_list_display,
+    )
     search_fields = ('name', 'slug')
 
-    @admin.display(description='Количества в рецептах')
-    def recipes_count(self, user):
-        """Метод возвращает общее количества рецептов.
 
-        У которых есть этот тег.
-        """
-        return self.get_recipes_count(user)
+class FavoriteShoppingCartMixin:
+    """Миксин для настройки избранных, список покупок"""
+
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('recipe__name', 'user__username')
+    list_filter = ('user',)
 
 
 @admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
+class FavoriteAdmin(FavoriteShoppingCartMixin, admin.ModelAdmin):
     """Настройка админ части избранных."""
-
-    list_display = ('id', 'user', 'recipe')
-    search_fields = ('recipe__name', 'user__username')
-    list_filter = ('user',)
+    pass
 
 
 @admin.register(ShoppingCart)
-class ShoppingCartAdmin(admin.ModelAdmin):
+class ShoppingCartAdmin(FavoriteShoppingCartMixin, admin.ModelAdmin):
     """Настройка админ части список покупок."""
-
-    list_display = ('id', 'user', 'recipe')
-    search_fields = ('recipe__name', 'user__username')
-    list_filter = ('user',)
+    pass
 
 
 @admin.register(Subscribe)
