@@ -5,15 +5,16 @@
 """
 
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
-from recipes.constans import MIN_COOKING_TIME, MIN_AMOUNT
+from recipes.constans import MIN_AMOUNT, MIN_COOKING_TIME
 
 
 username_validator = RegexValidator(
-    regex=r'^[\w.@+-]+$',
+    regex=settings.USERNAME_VALIDATION_REGEX,
     message='Имя пользователя может содержать только буквы, цифры и символы',
     code='invalid_username'
 )

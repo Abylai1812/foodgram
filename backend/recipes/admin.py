@@ -69,7 +69,7 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
                 f'<img src="{user.avatar.url}" '
                 f'style="width:60px; height:60px;" />'
             )
-        return 'No avatar'
+        return ''
 
     @admin.display(description='Подписчики')
     def followers_count(self, user):
@@ -126,7 +126,6 @@ class RecipesAdmin(admin.ModelAdmin):
     @mark_safe
     def ingredients_preview(self, recipe):
         """Возвращает краткий перечень названий ингредиентов."""
-
         return ('<br>'.join(
             f'•{i.ingredient.name} - {i.amount} '
             f'{i.ingredient.measurement_unit}'
@@ -158,7 +157,7 @@ class TagsAdmin(RecipesCountMixin, admin.ModelAdmin):
 
 
 class FavoriteShoppingCartMixin:
-    """Миксин для настройки избранных, список покупок"""
+    """Миксин для настройки избранных, список покупок."""
 
     list_display = ('id', 'user', 'recipe')
     search_fields = ('recipe__name', 'user__username')
@@ -168,12 +167,14 @@ class FavoriteShoppingCartMixin:
 @admin.register(Favorite)
 class FavoriteAdmin(FavoriteShoppingCartMixin, admin.ModelAdmin):
     """Настройка админ части избранных."""
+
     pass
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(FavoriteShoppingCartMixin, admin.ModelAdmin):
     """Настройка админ части список покупок."""
+
     pass
 
 

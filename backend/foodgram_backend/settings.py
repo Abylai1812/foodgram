@@ -123,6 +123,8 @@ STATIC_ROOT = '/app/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
 
+USERNAME_VALIDATION_REGEX = r'^[\w.@+-]+$'
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
