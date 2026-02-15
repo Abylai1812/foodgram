@@ -45,14 +45,17 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
         'username',
         'email',
         'full_name',
-        'avatar',
         'avatar_preview',
         'followers_count',
         'following_count',
         *RecipesCountMixin.recipes_list_display
     )
     list_display_links = ('username',)
-    list_editable = ('avatar',)
+    fieldsets = (
+        *UserAdmin.fieldsets, 
+        ('Аватар',
+        {'fields': ('avatar', 'avatar_preview')})
+    )
     search_fields = ('username', 'email')
     ordering = ('username',)
     readonly_fields = ('email', 'avatar_preview')
@@ -88,8 +91,14 @@ class RecipeIngredientInline(admin.TabularInline):
     """Позволяет добавлять/удалять ингредиенты в рецепте."""
 
     model = RecipeIngredient
-    fields = ('ingredient', 'amount')
+    fields = ('ingredient', 'amount', 'get_measurement_unit')
+    readonly_fields = ('get_measurement_unit',)
     min_num = 1
+
+    @admin.display(description='Единица измерения')
+    def get_measurement_unit(self, recipe_ingredient):
+        """Достает единицу измерения из связанной модели ингредиента."""
+        return recipe_ingredient.ingredient.measurement_unit
 
 
 @admin.register(Recipes)
@@ -100,10 +109,9 @@ class RecipesAdmin(admin.ModelAdmin):
 
     list_display = (
         'id', 'name', 'author', 'tags_preview',
-        'cooking_time', 'image_recipe', 'image',
+        'cooking_time', 'image_recipe',
         'ingredients_preview', 'favorite_count'
     )
-    list_editable = ('image',)
     search_fields = (
         'name', 'tags__name',
         'author__username',
@@ -134,6 +142,7 @@ class RecipesAdmin(admin.ModelAdmin):
         return recipe.favorites.count()
 
     @admin.display(description='Теги')
+    @mark_safe
     def tags_preview(self, recipe):
         """Возвращает строковое представление всех тегов рецепта."""
         return '<br>'.join(tag.name for tag in recipe.tags.all())

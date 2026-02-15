@@ -3,7 +3,7 @@
 
 Продукты:
 {% for ingredient in ingredients %}
-{{ forloop.counter }}. {{ ingredient.ingredient__name }} ({{ ingredient.ingredient__measurement_unit }}) — {{ ingredient.total_amount }}
+{{ forloop.counter }}. {{ ingredient.ingredient__name|capfirst }} ({{ ingredient.ingredient__measurement_unit }}) — {{ ingredient.total_amount }}
 {% empty %}
 — Нет продуктов —
 {% endfor %}
