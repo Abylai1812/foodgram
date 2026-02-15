@@ -45,15 +45,17 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
         'username',
         'email',
         'full_name',
+        'avatar',
         'avatar_preview',
         'followers_count',
         'following_count',
         *RecipesCountMixin.recipes_list_display
     )
     list_display_links = ('username',)
-    list_editable = ('email',)
+    list_editable = ('avatar',)
     search_fields = ('username', 'email')
     ordering = ('username',)
+    readonly_fields = ('email', 'avatar_preview')
 
     @admin.display(description='ФИО')
     def full_name(self, user):
@@ -82,21 +84,34 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
         return user.subscriptions.count()
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    """Позволяет добавлять/удалять ингредиенты в рецепте."""
+
+    model = RecipeIngredient
+    fields = ('ingredient', 'amount')
+    min_num = 1
+
+
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
     """Настройка админ части рецептов."""
 
+    inlines = (RecipeIngredientInline,)
+
     list_display = (
-        'id', 'name', 'text', 'author', 'tags_preview',
-        'cooking_time', 'image_recipe', 'favorite_count',
-        'ingredients_preview'
+        'id', 'name', 'author', 'tags_preview',
+        'cooking_time', 'image_recipe', 'image',
+        'ingredients_preview', 'favorite_count'
     )
+    list_editable = ('image',)
     search_fields = (
         'name', 'tags__name',
         'author__username',
         'ingredients__name'
     )
     list_filter = ('tags', 'author')
+    readonly_fields = ('image_recipe',)
+    list_display_links = ('id', 'name',)
 
     @admin.display(description='Фото')
     @mark_safe
@@ -105,7 +120,8 @@ class RecipesAdmin(admin.ModelAdmin):
         if recipe.image:
             return (
                 f'<img src="{recipe.image.url}" '
-                f'style="width:100px; height:100px;" />'
+                f'style="width:100px; height:100px; '
+                f'object-fit:cover; border-radius:5px" />'
             )
         return ''
 

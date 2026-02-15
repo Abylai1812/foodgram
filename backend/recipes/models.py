@@ -37,7 +37,8 @@ class User(AbstractUser):
     first_name = models.CharField('Имя', max_length=150, blank=False)
     last_name = models.CharField('Фамилия', max_length=150, blank=False)
     avatar = models.ImageField(
-        'Аватар', upload_to='users/', null=True, default=None
+        'Аватар', upload_to='users/',
+        null=True, default=None, blank=True
     )
 
     class Meta(AbstractUser.Meta):
@@ -129,9 +130,6 @@ class Recipes(models.Model):
         related_name='recipes',
         verbose_name='Автор'
     )
-    image = models.ImageField(
-        'Фото', upload_to='recipes/', blank=True, null=True
-    )
     ingredients = models.ManyToManyField(
         Ingredients,
         through='RecipeIngredient',
@@ -144,8 +142,11 @@ class Recipes(models.Model):
         verbose_name='Теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        'Время приготовления в минутах',
+        'Время (мин)',
         validators=[MinValueValidator(MIN_COOKING_TIME)]
+    )
+    image = models.ImageField(
+        'Фото', upload_to='recipes/', blank=True, null=True
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True
