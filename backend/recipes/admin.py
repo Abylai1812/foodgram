@@ -52,9 +52,9 @@ class ProfileUserAdmin(RecipesCountMixin, UserAdmin):
     )
     list_display_links = ('username',)
     fieldsets = (
-        *UserAdmin.fieldsets, 
+        *UserAdmin.fieldsets,
         ('Аватар',
-        {'fields': ('avatar', 'avatar_preview')})
+         {'fields': ('avatar_preview', 'avatar')})
     )
     search_fields = ('username', 'email')
     ordering = ('username',)
