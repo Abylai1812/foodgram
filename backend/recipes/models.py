@@ -115,8 +115,8 @@ class Ingredients(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        """Возвращает строковое представление ингредиентов (название)."""
-        return self.name
+        """Возвращает строковое представление ингредиентов."""
+        return f'{self.name} ({self.measurement_unit})'
 
 
 class Recipes(models.Model):

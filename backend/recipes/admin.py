@@ -91,14 +91,9 @@ class RecipeIngredientInline(admin.TabularInline):
     """Позволяет добавлять/удалять ингредиенты в рецепте."""
 
     model = RecipeIngredient
-    fields = ('ingredient', 'amount', 'get_measurement_unit')
-    readonly_fields = ('get_measurement_unit',)
+    fields = ('ingredient', 'amount')
+    autocomplete_fields = ('ingredient',)
     min_num = 1
-
-    @admin.display(description='Единица измерения')
-    def get_measurement_unit(self, recipe_ingredient):
-        """Достает единицу измерения из связанной модели ингредиента."""
-        return recipe_ingredient.ingredient.measurement_unit
 
 
 @admin.register(Recipes)
